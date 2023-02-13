@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mx.accenture.springmvc.example.dto.CourseDTO;
-import com.mx.accenture.springmvc.example.exceptions.CourseException;
+import com.mx.accenture.springmvc.example.exceptions.ApplicationException;
 import com.mx.accenture.springmvc.example.model.Course;
 import com.mx.accenture.springmvc.example.service.ICourseService;
 
@@ -35,25 +35,25 @@ public class CourseController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    public CourseDTO findCourse(@PathVariable int id) throws CourseException {
+    public CourseDTO findCourse(@PathVariable Long id) throws ApplicationException {
         return courseService.findCourseDto(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public CourseDTO createCourse(@RequestBody Course course) throws CourseException {
+    public CourseDTO createCourse(@RequestBody Course course) throws ApplicationException {
         return courseService.addCourse(course);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
-    public CourseDTO updateCourse(@PathVariable int id, @RequestBody Course course) throws CourseException {
+    public CourseDTO updateCourse(@PathVariable Long id, @RequestBody Course course) throws ApplicationException {
         return courseService.updateCourse(id, course);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    public void deleteCourse(@PathVariable int id){
+    public void deleteCourse(@PathVariable Long id) throws ApplicationException {
         courseService.deleteCourse(id);
     }
 

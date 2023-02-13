@@ -2,7 +2,7 @@ package com.mx.accenture.springmvc.example.service;
 
 import com.mx.accenture.springmvc.example.dao.CourseRepository;
 import com.mx.accenture.springmvc.example.dto.CourseDTO;
-import com.mx.accenture.springmvc.example.exceptions.CourseException;
+import com.mx.accenture.springmvc.example.exceptions.ApplicationException;
 import com.mx.accenture.springmvc.example.model.Course;
 
 import org.modelmapper.ModelMapper;
@@ -29,6 +29,7 @@ public class CourseServiceImpl implements ICourseService {
     @Override
     public List<CourseDTO> listCourses() {
         var courses = courseRepository.findAll();
+
         var coursesDto = courses.stream()
                 .map(this::mapCourseToCourseDTO)
                 .collect(Collectors.toList());
@@ -36,38 +37,43 @@ public class CourseServiceImpl implements ICourseService {
     }
 
     @Override
-    public CourseDTO findCourseDto(int idCourse) throws CourseException {
+    public CourseDTO findCourseDto(Long idCourse) throws ApplicationException {
         Optional<Course> course = courseRepository.findById(idCourse);
         if (course.isEmpty()) {
             throw COURSE_NOT_FOUND;
         }
-        return modelMapper.map(course.get(), CourseDTO.class);
+        return mapCourseToCourseDTO(course.get());
     }
 
     @Override
-    public CourseDTO updateCourse(int idCourse, Course course) throws CourseException {
-        validateCourse(course);
+    public CourseDTO updateCourse(Long idCourse, Course course) throws ApplicationException {
         var existingCourse = courseRepository.findById(idCourse);
         if (existingCourse.isEmpty()) {
             throw COURSE_NOT_FOUND;
         }
 
+        validateCourse(course);
+
+        course.setId(idCourse);
+        course.setNumberLessons(isNull(course.getNumberLessons())
+                ? existingCourse.get().getNumberLessons() : course.getNumberLessons());
+
         var courseSaved = courseRepository.save(course);
         return modelMapper.map(courseSaved, CourseDTO.class);
     }
 
     @Override
-    public CourseDTO addCourse(Course course) throws CourseException {
+    public CourseDTO addCourse(Course course) throws ApplicationException {
         validateCourse(course);
         var courseSaved = courseRepository.save(course);
         return modelMapper.map(courseSaved, CourseDTO.class);
     }
 
-    private void validateCourse(Course course) throws CourseException {
+    private void validateCourse(Course course) throws ApplicationException {
         StringBuilder courseIssues = new StringBuilder();
 
         if(isNull(course)) {
-            throw new CourseException("Course should NOT be null.", HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("Course should NOT be null.", HttpStatus.BAD_REQUEST);
         }
 
         if (isNull(course.getNameCourse()) || course.getNameCourse().isBlank()) {
@@ -79,19 +85,25 @@ public class CourseServiceImpl implements ICourseService {
         }
 
         if (courseIssues.length() > 0) {
-            throw new CourseException(courseIssues.toString(), HttpStatus.BAD_REQUEST);
+            throw new ApplicationException(courseIssues.toString(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
-    public void deleteCourse(int idCourse) {
+    public void deleteCourse(Long idCourse) throws ApplicationException {
+        var existingCourse = courseRepository.findById(idCourse);
+        if (existingCourse.isEmpty()) {
+            throw COURSE_NOT_FOUND;
+        }
         courseRepository.deleteById(idCourse);
     }
 
     private CourseDTO mapCourseToCourseDTO(Course course){
         /*CourseDTO filteredCustomer = new CourseDTO(course.getIdCourse(), course.getNameCourse(), course.getTypeCourse(),
                 course.getNameTeacher(), course.getNumberStudents(), course.getNumberLessons());*/
+        var numberOfStudents = courseRepository.countStudentsByCourseId(course.getId());
         var filteredCustomer = modelMapper.map(course, CourseDTO.class);
+        filteredCustomer.setNumberStudents(numberOfStudents);
         return filteredCustomer;
     }
 
