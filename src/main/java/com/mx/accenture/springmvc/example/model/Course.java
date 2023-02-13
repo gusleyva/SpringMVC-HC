@@ -1,10 +1,28 @@
 package com.mx.accenture.springmvc.example.model;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "Course")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Course implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -12,64 +30,29 @@ public class Course implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_course")
-    private int idCourse;
+    private Long id;
+
     @Column(name = "name_course")
     private String nameCourse;
+
     @Column(name = "type_course")
     private String typeCourse;
+
     @Column(name = "name_teacher")
     private String nameTeacher;
-    @Column(name = "number_students")
-    private int numberStudents;
+
     @Column(name = "number_lessons")
     private int numberLessons;
 
+    /*
+    @JsonBackReference
+    @ManyToMany
+    @JoinTable(
+            name = "student_course",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
+    private List<Student> students;
+    */
 
-    public int getIdCourse() {
-        return idCourse;
-    }
-
-    public void setIdCourse(int idCourse) {
-        this.idCourse = idCourse;
-    }
-
-    public String getNameCourse() {
-        return nameCourse;
-    }
-
-    public void setNameCourse(String nameCourse) {
-        this.nameCourse = nameCourse;
-    }
-
-    public String getTypeCourse() {
-        return typeCourse;
-    }
-
-    public void setTypeCourse(String typeCourse) {
-        this.typeCourse = typeCourse;
-    }
-
-    public String getNameTeacher() {
-        return nameTeacher;
-    }
-
-    public void setNameTeacher(String nameTeacher) {
-        this.nameTeacher = nameTeacher;
-    }
-
-    public int getNumberStudents() {
-        return numberStudents;
-    }
-
-    public void setNumberStudents(Integer numberStudents) {
-        this.numberStudents = numberStudents;
-    }
-
-    public int getNumberLessons() {
-        return numberLessons;
-    }
-
-    public void setNumberLessons(Integer numberLessons) {
-        this.numberLessons = numberLessons;
-    }
 }

@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class ApplicationExceptionHandler {
-    @ExceptionHandler(CourseException.class)
-    public ResponseEntity<CourseExceptionDto> taskException(CourseException ex) {
-        CourseExceptionDto taskExceptionDto = new CourseExceptionDto(ex.getMessage(), ex.getStatus());
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ApplicationExceptionDto> taskException(ApplicationException ex) {
+        ApplicationExceptionDto taskExceptionDto = new ApplicationExceptionDto(ex.getMessage(), ex.getStatus());
         return new ResponseEntity<>(taskExceptionDto, new HttpHeaders(), ex.getStatus());
     }
 }

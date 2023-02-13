@@ -5,11 +5,11 @@ import org.springframework.http.HttpStatus;
 import lombok.Getter;
 
 @Getter
-public class CourseExceptionDto {
+public class ApplicationExceptionDto {
     private String message;
     private HttpStatus status;
 
-    public CourseExceptionDto(String message, HttpStatus httpStatus) {
+    public ApplicationExceptionDto(String message, HttpStatus httpStatus) {
         this.message = message;
         this.status = httpStatus;
     }

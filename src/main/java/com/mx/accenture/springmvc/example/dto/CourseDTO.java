@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDTO implements Serializable {
-    private int idCourse;
+    private Long idCourse;
     private String nameCourse;
     private String typeCourse;
     private String nameTeacher;
-    private int numberStudents;
+    private Long numberStudents;
     private int numberLessons;
 }
 
