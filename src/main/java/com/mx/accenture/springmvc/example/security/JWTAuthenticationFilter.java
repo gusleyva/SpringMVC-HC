@@ -33,13 +33,13 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
 
         // Attempt authentication
-        UsernamePasswordAuthenticationToken usernamePAT = new UsernamePasswordAuthenticationToken(
+        var authToken = new UsernamePasswordAuthenticationToken(
                 authCredentials.getUsername(),
                 authCredentials.getPassword(),
                 Collections.emptyList()
         );
 
-        return getAuthenticationManager().authenticate(usernamePAT);
+        return this.getAuthenticationManager().authenticate(authToken);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // Add token to response header
         response.addHeader("Authorization", "Bearer "+ token);
         response.getWriter().flush();
-
+        System.out.println("Authorization, Bearer " + token);
         super.successfulAuthentication(request, response, chain, authResult);
     }
 

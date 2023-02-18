@@ -1,29 +1,27 @@
 package com.mx.accenture.springmvc.example.security;
 
-import java.io.IOException;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Configuration
+@EnableWebSecurity
 public class WebSecurityConfig {
 
     private final JWTAuthorizationFilter jwtAuthorizationFilter;
@@ -41,23 +39,20 @@ public class WebSecurityConfig {
 
         // All requests need authentication
         return http
+                // .cors().disable()
                 .csrf().disable()
                 .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and().exceptionHandling().authenticationEntryPoint(new AuthenticationEntryPoint(){
-                    @Override
-                    public  void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authenticationException)throws IOException, ServletException {
-
+                    .anyRequest()
+                    .authenticated()
+                .and()
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                    .exceptionHandling().authenticationEntryPoint((request, response, authenticationException) -> {
                         response.setStatus(HttpStatus.UNAUTHORIZED.value());
                         RequestDispatcher view = request.getRequestDispatcher("/invalidtoken.html");
                         view.forward(request, response);
-                    }
-
-                })
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    })
                 .and()
                 .addFilter(jwtAuthenticationFilter)
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -72,11 +67,12 @@ public class WebSecurityConfig {
 
     // Set an in-memory static User
     @Bean
-    public UserDetailsService userDetailsService() {
+    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
         manager.createUser(User.withUsername("admin")
-                .password(passwordEncoder().encode("admin"))
-                .roles()
+                //.password("{noop}admin") // Use {noop} prefix to indicate plaintext password
+                .password(passwordEncoder.encode("admin"))
+                .roles("USER")
                 .build());
 
         return manager;
@@ -84,10 +80,11 @@ public class WebSecurityConfig {
 
 
     @Bean
-    AuthenticationManager authManager(HttpSecurity http) throws Exception {
+    AuthenticationManager authManager(HttpSecurity http, UserDetailsService userDetailsService,
+                                      PasswordEncoder passwordEncoder) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService())
-                .passwordEncoder(passwordEncoder())
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder)
                 .and()
                 .build();
     }
